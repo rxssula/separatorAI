@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import S3Service from "./s3-service";
+import path from "path";
+import fs from "fs";
 
 class S3Controller {
   private s3Service: S3Service;
@@ -9,8 +11,17 @@ class S3Controller {
   }
 
   UploadFile = async (req: Request, res: Response): Promise<void> => {
+    const file = (req as any).file;
+    if (!file) {
+      res.status(400).json({ message: "No file uploaded" });
+      return;
+    }
     try {
-      await this.s3Service.uploadFile(process.env.AWS_BUCKET_NAME!, "test.mp3");
+      await this.s3Service.uploadFile(
+        process.env.AWS_BUCKET_NAME!,
+        file.originalname,
+        file.buffer
+      );
       res.status(200).json({ message: "File uploaded successfully" });
     } catch (error) {
       res.status(500).json({ message: "Error uploading file" });

@@ -2,6 +2,7 @@ import { Upload } from "@aws-sdk/lib-storage";
 import dotenv from "dotenv";
 import { S3 } from "@aws-sdk/client-s3";
 import mime from "mime";
+import Song from "../files/models/Song";
 
 dotenv.config();
 
@@ -27,7 +28,13 @@ class S3Service {
           ACL: "public-read",
         },
       }).done();
-      console.log(res);
+
+      const newSong = new Song({
+        originalName: name,
+        s3Url: res.Location,
+      });
+
+      await newSong.save();
     } catch (error) {
       console.log(`Error uploading a file: ${error}`);
     }

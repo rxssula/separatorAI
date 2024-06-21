@@ -12,7 +12,7 @@ const s3Controller = new S3Controller(s3Service);
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-s3Router.post("/upload", s3Controller.UploadFile);
+s3Router.post("/upload", upload.single("music"), s3Controller.UploadFile);
 s3Router.post("/update", s3Controller.UpdateFile);
 s3Router.post("/delete", s3Controller.DeleteFile);
 s3Router.get("/songs", s3Controller.ListSongs);
