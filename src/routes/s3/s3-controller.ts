@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import S3Service from "./s3-service";
-import path from "path";
-import fs from "fs";
 
 class S3Controller {
   private s3Service: S3Service;
