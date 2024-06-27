@@ -29,6 +29,7 @@
     "multer": "^1.4.5-lts.1",
     "passport": "^0.7.0",
     "path": "^0.12.7",
+    "replicate": "^0.30.2",
     "session": "^0.1.0"
   },
   "devDependencies": {

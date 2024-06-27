@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { S3 } from "@aws-sdk/client-s3";
 import mime from "mime";
 import Song from "../files/models/Song";
+import { demucs } from "../demucs/demucs-service";
 
 dotenv.config();
 
@@ -29,9 +30,15 @@ class S3Service {
         },
       }).done();
 
+      const results = await demucs(res.Location);
+
       const newSong = new Song({
         originalName: name,
         s3Url: res.Location,
+        bass: results.bass,
+        drums: results.drums,
+        other: results.other,
+        vocals: results.vocals,
       });
 
       await newSong.save();
