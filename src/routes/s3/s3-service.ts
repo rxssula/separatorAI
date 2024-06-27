@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import { S3 } from "@aws-sdk/client-s3";
 import mime from "mime";
 import Song from "../files/models/Song";
-import { demucs } from "../demucs/demucs-service";
+import { Demucs, demucs } from "../demucs/demucs-service";
+import axios from "axios";
 
 dotenv.config();
 
@@ -16,6 +17,31 @@ const s3 = new S3({
 });
 
 class S3Service {
+  private async uploadFileFromUrl(Bucket: string, name: string, url: string) {
+    const response = await axios({
+      url,
+      method: "GET",
+      responseType: "stream",
+    });
+
+    const contentType = mime.lookup(name);
+
+    try {
+      return new Upload({
+        client: s3,
+        params: {
+          Bucket,
+          Key: name,
+          Body: response.data,
+          ContentType: contentType,
+          ACL: "public-read",
+        },
+      }).done();
+    } catch (error) {
+      console.log(`Error uploading a file: ${error}`);
+    }
+  }
+
   async uploadFile(Bucket: string, name: string, file: Buffer) {
     const contentType = mime.lookup(name);
     try {
@@ -32,13 +58,44 @@ class S3Service {
 
       const results = await demucs(res.Location);
 
+      const uploadPromises = Object.entries(results).map(
+        async ([component, url]) => {
+          if (url === null) return;
+          const s3Response = await this.uploadFileFromUrl(
+            Bucket,
+            `separated/${name}_${component}.wav`,
+            url
+          );
+          return { [component]: s3Response?.Location };
+        }
+      );
+
+      const uploadResultsArray = await Promise.all(uploadPromises);
+      const uploadResults = Object.assign({}, ...uploadResultsArray);
+
+      //   const uploadResults = {
+      //     bass: null,
+      //     drums: null,
+      //     other: null,
+      //     vocals: null,
+      //   };
+      //   for (const [component, url] of Object.entries(results)) {
+      //     if (url === null) continue;
+      //     const s3Response = await this.uploadFileFromUrl(
+      //       Bucket,
+      //       `separated/${name}_${component}.wav`,
+      //       url
+      //     );
+      //     uploadResults[component] = s3Response?.Location;
+      //   }
+
       const newSong = new Song({
         originalName: name,
         s3Url: res.Location,
-        bass: results.bass,
-        drums: results.drums,
-        other: results.other,
-        vocals: results.vocals,
+        bass: uploadResults.bass,
+        drums: uploadResults.drums,
+        other: uploadResults.other,
+        vocals: uploadResults.vocals,
       });
 
       await newSong.save();
