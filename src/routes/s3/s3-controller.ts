@@ -15,12 +15,12 @@ class S3Controller {
       return;
     }
     try {
-      await this.s3Service.uploadFile(
+      const files = await this.s3Service.uploadFile(
         process.env.AWS_BUCKET_NAME!,
         file.originalname,
         file.buffer
       );
-      res.status(200).json({ message: "File uploaded successfully" });
+      res.status(200).json({ files });
     } catch (error) {
       res.status(500).json({ message: "Error uploading file" });
     }
