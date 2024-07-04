@@ -1,7 +1,6 @@
 "use client";
 
 import axios from "axios";
-
 import { useRef, useState } from "react";
 import { UploadIcon } from "./icons";
 
@@ -25,15 +24,15 @@ const Upload: React.FC<UploadProps> = ({ title, description }) => {
 
   const onFileUpload = async (file: File) => {
     const formData = new FormData();
-    formData.append("music", file);
+    formData.append("audio", file); // Use 'file' instead of 'music'
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/v1/upload",
+        "http://localhost:3000/api/v1/test-upload",
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "audio/mp3",
           },
         }
       );
@@ -50,7 +49,7 @@ const Upload: React.FC<UploadProps> = ({ title, description }) => {
   };
 
   return (
-    <div className="px-40">
+    <div className="px-10 grid grid-cols-1">
       <div className="flex flex-col items-center h-screen pt-48 container mx-auto">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
           {title}

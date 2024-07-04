@@ -55,50 +55,6 @@ class S3Service {
           ACL: "public-read",
         },
       }).done();
-
-      const results = await demucs(res.Location);
-
-      const uploadPromises = Object.entries(results).map(
-        async ([component, url]) => {
-          if (url === null) return;
-          const s3Response = await this.uploadFileFromUrl(
-            Bucket,
-            `separated/${name}_${component}.wav`,
-            url
-          );
-          return { [component]: s3Response?.Location };
-        }
-      );
-
-      const uploadResultsArray = await Promise.all(uploadPromises);
-      const uploadResults = Object.assign({}, ...uploadResultsArray);
-
-      //   const uploadResults = {
-      //     bass: null,
-      //     drums: null,
-      //     other: null,
-      //     vocals: null,
-      //   };
-      //   for (const [component, url] of Object.entries(results)) {
-      //     if (url === null) continue;
-      //     const s3Response = await this.uploadFileFromUrl(
-      //       Bucket,
-      //       `separated/${name}_${component}.wav`,
-      //       url
-      //     );
-      //     uploadResults[component] = s3Response?.Location;
-      //   }
-
-      const newSong = new Song({
-        originalName: name,
-        s3Url: res.Location,
-        bass: uploadResults.bass,
-        drums: uploadResults.drums,
-        other: uploadResults.other,
-        vocals: uploadResults.vocals,
-      });
-
-      await newSong.save();
     } catch (error) {
       console.log(`Error uploading a file: ${error}`);
     }
