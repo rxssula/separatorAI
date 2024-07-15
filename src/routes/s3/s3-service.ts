@@ -2,9 +2,9 @@ import { Upload } from "@aws-sdk/lib-storage";
 import dotenv from "dotenv";
 import { S3 } from "@aws-sdk/client-s3";
 import mime from "mime";
-import Song from "../files/models/Song";
-import { Demucs, demucs } from "../demucs/demucs-service";
-import axios from "axios";
+import { readFile } from "fs/promises";
+import path from "path";
+import fs from "fs"
 
 dotenv.config();
 
@@ -17,29 +17,47 @@ const s3 = new S3({
 });
 
 class S3Service {
-  private async uploadFileFromUrl(Bucket: string, name: string, url: string) {
-    const response = await axios({
-      url,
-      method: "GET",
-      responseType: "stream",
-    });
 
-    const contentType = mime.lookup(name);
+    async uploadFileToS3WithStream (filepath: string, filename: string, folderName: string) {
+      const fileStream = fs.createReadStream(filepath);
+      const contentType = mime.lookup(filename);
 
-    try {
-      return new Upload({
+      const parallelUploads3 = new Upload({
         client: s3,
         params: {
-          Bucket,
-          Key: name,
-          Body: response.data,
-          ContentType: contentType,
-          ACL: "public-read",
+            Bucket: process.env.AWS_BUCKET_NAME!,
+            Key: `${folderName}/${filename}`,
+            Body: fileStream,
+            ContentType: contentType,
+            ACL: "public-read",
         },
-      }).done();
-    } catch (error) {
-      console.log(`Error uploading a file: ${error}`);
-    }
+      });
+
+      return parallelUploads3.done();
+    };
+
+  async uploadFileToS3(
+    filePath: string,
+    filename: string,
+    folderName: string
+  ): Promise<any> {
+    const fileBuffer = await readFile(filePath);
+    const contentType = mime.lookup(filename);
+
+    const s3Key = path.join(folderName, filename);
+
+    const parallelUploads3 = new Upload({
+      client: s3,
+      params: {
+        Bucket: process.env.AWS_BUCKET_NAME!,
+        Key: s3Key,
+        Body: fileBuffer,
+        ContentType: contentType,
+        ACL: "public-read",
+      },
+    });
+
+    return parallelUploads3.done();
   }
 
   async uploadFile(Bucket: string, name: string, file: Buffer) {

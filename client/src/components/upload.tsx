@@ -7,9 +7,14 @@ import { UploadIcon } from "./icons";
 interface UploadProps {
   title: string;
   description: string;
+  onStemsUpdate: (newStems: string[]) => void;
 }
 
-const Upload: React.FC<UploadProps> = ({ title, description }) => {
+const Upload: React.FC<UploadProps> = ({
+  title,
+  description,
+  onStemsUpdate,
+}) => {
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -24,11 +29,11 @@ const Upload: React.FC<UploadProps> = ({ title, description }) => {
 
   const onFileUpload = async (file: File) => {
     const formData = new FormData();
-    formData.append("audio", file); // Use 'file' instead of 'music'
+    formData.append("audio", file);
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/v1/test-upload",
+        "http://localhost:3000/api/v1/upload",
         formData,
         {
           headers: {
@@ -36,7 +41,8 @@ const Upload: React.FC<UploadProps> = ({ title, description }) => {
           },
         }
       );
-      console.log(response);
+      console.log(response.data);
+      onStemsUpdate(response.data.files);
     } catch (error) {
       console.error("Error uploading file", error);
     }

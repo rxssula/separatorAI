@@ -1,20 +1,14 @@
 import { Request, Response } from "express";
-import { S3 } from "@aws-sdk/client-s3";
 import S3Service from "./s3-service";
-import path, { join } from "path";
-import { writeFile, unlink } from "fs";
-import { readdir, readFile, stat } from "fs/promises";
-import { Options, PythonShell } from "python-shell";
-import mime from "mime";
-import { Upload } from "@aws-sdk/lib-storage";
-
-const s3 = new S3({
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+import path from "path";
+import {
+  deleteFiles,
+  deleteFolder,
+  readOutputFiles,
+  saveFile,
+} from "../files/files-service";
+import fs from "fs"
+import { runDemucsScript, runYoutubeScript } from "../../python-scripts/python-script";
 
 class S3Controller {
   private s3Service: S3Service;
@@ -23,95 +17,64 @@ class S3Controller {
     this.s3Service = s3Service;
   }
 
-  NewUploadFile = async (req: Request, res: Response) => {
-    const file = (req as any).file;
-    if (!file) {
-      return res.status(400).send("No file uploaded.");
-    }
+    // Function to extract YouTube ID from the URL
+  private extractYouTubeID = (url: string): string => {
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : '';
+  };
 
-    const audioBuffer = file.buffer;
-    const filename = file.originalname;
-    const tempPath = path.join(__dirname, "uploads", filename);
-    const outputPath = path.join(__dirname, "./output");
+  UploadLink = async (req: Request, res: Response) => {
+    const { link } = req.body;
+    const downloadDir = path.join(__dirname, "uploads");
 
     try {
-      // Write the audio buffer to a temporary file
-      await new Promise<void>((resolve, reject) => {
-        writeFile(tempPath, audioBuffer, (err) => {
-          if (err) {
-            reject(new Error("Failed to save audio file."));
-          } else {
-            resolve();
-          }
-        });
-      });
-      console.log("Saved file locally");
+      // Extract the YouTube ID from the URL
+      const youtubeID = this.extractYouTubeID(link);
+      if (!youtubeID) {
+        throw new Error("Invalid YouTube URL");
+      }
 
-      // Run the Python script to separate the audio
-      const options: Options = {
-        mode: "text",
-        pythonOptions: ["-u"],
-        args: [tempPath, outputPath],
-      };
+      // Step 1: Download the file from YouTube
+      await runYoutubeScript(link, downloadDir);
+      console.log("Downloaded successfully");
 
-      console.log("running Python script");
-      await PythonShell.run(path.join(__dirname, "demucs-script.py"), options);
+      // Construct the expected filename using the YouTube ID
+      const audioPath = path.join(downloadDir, `${youtubeID}.mp3`);
+      const filename = path.basename(audioPath);
+      const outputPath = path.join(__dirname, "./output");
+      const folderName = path.parse(filename).name;
 
-      // Read the output directory to get the separated files
-      const files = await readdir(outputPath);
+      // Step 2: Run Demucs to separate the audio file
+      console.log("Running Python script");
+      await runDemucsScript(audioPath, outputPath);
+      console.log("Finished running Python script");
 
-      const filePromises = files.map(async (file) => {
-        const filepath = join(outputPath, file);
-        const fileStat = await stat(filepath);
-        return fileStat.isFile() ? filepath : null;
-      });
+      // Step 3: Read the separated files from the output directory
+      const separatedFilesDir = path.join(outputPath, "/hdemucs_mmi", folderName);
+      const separatedFiles = await readOutputFiles(separatedFilesDir);
 
-      const filteredFiles = (await Promise.all(filePromises)).filter(Boolean);
+      // Step 4: Upload the separated stems to S3
+      console.log("Uploading files to s3...")
+      const fileLinks = await Promise.all(
+        separatedFiles.map((filepath) => {
+          const filename = path.basename(filepath);
+          return this.s3Service.uploadFileToS3WithStream(filepath, filename, folderName);
+        })
+      );
+      console.log("Uploaded files to s3")
 
-      const uploadPromises = filteredFiles.map(async (filepath) => {
-        const fileBuffer = await readFile(filepath!);
+      const fileLinkLocations = fileLinks.map((link) => link.Location);
+      const allFileLinks = [...fileLinkLocations];
+      console.log(allFileLinks);
 
-        const contentType = mime.lookup(filepath!);
+      // Step 5: Clean up temporary files
+      await deleteFiles([...separatedFiles, audioPath]);
+      await deleteFolder(separatedFilesDir);
 
-        const parallelUploads3 = new Upload({
-          client: s3,
-          params: {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: filepath!,
-            Body: fileBuffer,
-            ContentType: contentType,
-            ACL: "public-read",
-          },
-        });
-
-        return parallelUploads3.done();
-      });
-
-      const uploadResults = await Promise.all(uploadPromises);
-      console.log("Is there any error");
-      const fileLinks = uploadResults.map((result: any) => result.Location);
-
-      const deletePromises = filteredFiles.map((filePath) => {
-        return new Promise<void>((resolve, reject) => {
-          unlink(filePath!, (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        });
-      });
-      await Promise.all(deletePromises);
-      unlink(tempPath, (err) => {
-        if (err) {
-          console.error("Error deleting temporary file:", err);
-        }
-      });
-
+      // Step 6: Send the response back to the user
       res.status(200).json({
         message: "File was separated successfully",
-        // files: separatedFiles,
+        files: fileLinks,
       });
     } catch (error: any) {
       console.error(error);
@@ -119,21 +82,63 @@ class S3Controller {
     }
   };
 
-  UploadFile = async (req: Request, res: Response): Promise<void> => {
+  UploadFile = async (req: Request, res: Response) => {
     const file = (req as any).file;
     if (!file) {
-      res.status(400).json({ message: "No file uploaded" });
-      return;
+      return res.status(400).send("No file uploaded.");
     }
+
+    const audioBuffer = file.buffer;
+    const filename = file.originalname;
+    const tempPath = path.join(__dirname, "./uploads", filename);
+    const outputPath = path.join(__dirname, "./output");
+
     try {
-      const files = await this.s3Service.uploadFile(
-        process.env.AWS_BUCKET_NAME!,
-        file.originalname,
-        file.buffer
+      await saveFile(tempPath, audioBuffer);
+      console.log("Saved file locally");
+
+      const folderName = path.parse(filename).name;
+
+      // const originalFileLink = await this.s3Service.uploadFileToS3(
+      //   tempPath,
+      //   filename,
+      //   folderName
+      // );
+      // console.log("Uploaded original file to S3");
+
+      console.log("Running Python script");
+      await runDemucsScript(tempPath, outputPath);
+
+      const files = await readOutputFiles(
+        path.join(
+          outputPath,
+          "/hdemucs_mmi",
+          filename.substring(0, filename.length - 4)
+        )
       );
-      res.status(200).json({ files });
-    } catch (error) {
-      res.status(500).json({ message: "Error uploading file" });
+
+      const fileLinks = await Promise.all(
+        files.map((filepath) => {
+          const filename = path.basename(filepath);
+          return this.s3Service.uploadFileToS3(filepath, filename, folderName);
+        })
+      );
+
+      const fileLinkLocations = fileLinks.map((link) => link.Location);
+      // const allFileLinks = [originalFileLink.Location, ...fileLinkLocations];
+      const allFileLinks = [...fileLinkLocations];
+      console.log(allFileLinks);
+
+      await deleteFiles([...files, tempPath]);
+      await deleteFolder(path.join(outputPath, "/hdemucs_mmi", folderName));
+
+      res.status(200).json({
+        message: "File was separated successfully",
+        files: fileLinks,
+      });
+    } catch (error: any) {
+      console.error(error);
+      res.status(500).send(error.message);
     }
   };
 

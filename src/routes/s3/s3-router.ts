@@ -2,18 +2,6 @@ import { Request, Response, Router } from "express";
 import S3Controller from "./s3-controller";
 import S3Service from "./s3-service";
 import multer from "multer";
-import path from "path";
-import {
-  createReadStream,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  unlinkSync,
-  writeFile,
-} from "fs";
-import { readdir } from "fs/promises";
-import { Options, PythonShell } from "python-shell";
-import { v4 as uuidv4 } from "uuid";
 
 const s3Router = Router();
 
@@ -23,13 +11,8 @@ const s3Controller = new S3Controller(s3Service);
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-s3Router.post(
-  "/test-upload",
-  upload.single("audio"),
-  s3Controller.NewUploadFile
-);
-
-s3Router.post("/upload", upload.single("music"), s3Controller.UploadFile);
+s3Router.post("/upload", upload.single("audio"), s3Controller.UploadFile);
+s3Router.post("/upload-link", s3Controller.UploadLink);
 s3Router.post("/update", s3Controller.UpdateFile);
 s3Router.post("/delete", s3Controller.DeleteFile);
 s3Router.get("/songs", s3Controller.ListSongs);
