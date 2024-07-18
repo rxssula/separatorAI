@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={cn("antialiased", fontHeading.variable, fontBody.variable)}
       >
-        <Header />
+        {/* <Header /> */}
         {children}
       </body>
     </html>

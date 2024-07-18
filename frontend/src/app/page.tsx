@@ -1,0 +1,46 @@
+import Image from "next/image";
+import { poppins } from "./layout";
+import { Waveform } from "./components/waveform";
+
+export default function Home() {
+  return (
+      <main>
+        <LandingPage />
+        <ExamplePage />
+      </main>
+  );
+}
+
+const LandingPage = () => {
+    return (
+        <div style={{minHeight: "100vh"}} className="flex flex-col min-h-full pt-32 mb-5">
+          <div className="container mx-auto text-[170px] font-black leading-[101.5%]">
+              <p className="z-10 relative">THE ULTIMATE</p>
+              <p>MUSIC</p>
+              <p className="relative"><span className="relative z-10">SEPARATOR</span>
+                  <span className="absolute left-[605px] bottom-[137px] w-[394px] h-[242px]">
+                        <Image style={{ borderRadius: "10px" }} layout="fill" className="h-auto w-auto z-0" src="/images/speaker.jpg" alt="Speaker" />
+                  </span>
+              </p>
+          </div>
+          <div className="flex flex-row justify-center font-semibold h-full mt-16 container mx-auto">
+              <button className="text-white h-16 w-40 border-2 px-4 rounded-[100px] border-[#AAA9A9] hover:transition-shadow hover:shadow-md hover:shadow-[#AAA9A9] bg-transparent">SEE EXAMPLE</button>
+              {/* <button className="text-white h-16 w-40 border-2 px-4 rounded-[100px] border-[#AAA9A9] bg-[#161217] hover:bg-opacity-20">SEE EXAMPLE</button> */}
+              {/* <button className="text-white ml-5 h-16 w-40 px-4 rounded-[100px] bg-gradient-to-br from-[#ad5389] to-[#3c1053] border-[#AAA9A9] hover:transition-shadow hover:shadow-md hover:shadow-[#AAA9A9]">GET STARTED</button> */}
+              <button className="text-white ml-5 h-16 w-40 px-4 rounded-[100px] bg-gradient-to-br from-[#ad5389] to-[#3c1053] border-[#AAA9A9] hover:bg-gradient-to-r focus:ring-4 focus:ring-[#ad5389]">GET STARTED</button>
+          </div>
+        </div>
+    );
+}
+
+const ExamplePage = () => {
+    return (
+        <div style={{ minHeight: "90vh" }} className={`container mx-auto ${poppins.className} flex flex-col gap-4`}>
+            <p className="text-4xl font-semibold">Examples</p>
+            <p className="text-md w-3/4 mb-12">If you’re interested in music, want to know more about how music is made, and how its parts interact with each other my innovative product is just for you.</p>
+            <div className="flex flex-row gap-5">
+                <Waveform title="Original song" audioUrl="/music/Кайрат Нуртас – Эх Қарындас-[AudioTrimmer.com].mp3" />
+            </div>
+        </div>
+    )
+}
