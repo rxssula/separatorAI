@@ -48,42 +48,47 @@ export const Waveform: React.FC<WaveformProps> = ({ audioUrl, title }) => {
     };
 
     return (
-        <div className="flex flex-row gap-5">
-            <p className="content-center">{ title }</p>
-            <WaveSurfer
-            height={80}
-            width={1060}
-            waveColor="rgb(102, 102, 102)"
-            progressColor="rgb(187, 187, 187)"
-            url={audioUrl}
-            onReady={onReady}
-            backend="MediaElement"
-            />
-            <div className="flex flex-col gap-4 content-center">
-                <button onClick={handlePlayPause}>{ isPlaying ?
-                    (<Image src="/icons/pause.svg" alt="pause" width={30} height={30} />) :
-                    (<Image src="/icons/play.svg" alt="play" width={30} height={30} />) }</button>
-                <button onClick={handleDownload}><Image src="/icons/download.svg" alt="download" width={30} height={30} /></button>
+        <div className="grid grid-cols-[120px_1fr_100px] gap-4 items-center">
+            <p className="text-left">{title}</p>
+            <div className="relative w-full">
+                <WaveSurfer
+                    height={80}
+                    waveColor="rgb(102, 102, 102)"
+                    progressColor="rgb(187, 187, 187)"
+                    cursorColor="white"
+                    url={audioUrl}
+                    onReady={onReady}
+                    backend="MediaElement"
+                />
             </div>
-            <div>
-            <input
-                type="range"
-                id="volume"
-                name="volume"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={handleVolumeChange}
-                style={{
-                    writingMode: "vertical-rl",
-                    WebkitAppearance: 'slider-vertical',
-                    width: '8px',
-                    height: '80px',
-                    padding: '0 5px',
-                    transform: "rotate(180deg)"
-                }}
-            />
+            <div className="flex flex-row gap-4 justify-end">
+                <div className="flex flex-col place-content-between">
+                    <button onClick={handlePlayPause}>
+                        {isPlaying ?
+                            (<Image src="/icons/pause.svg" alt="pause" width={30} height={30} />) :
+                            (<Image src="/icons/play.svg" alt="play" width={30} height={30} />)}
+                    </button>
+                    <button onClick={handleDownload}>
+                        <Image src="/icons/download.svg" alt="download" width={30} height={30} />
+                    </button>
+                </div>
+                <input
+                    type="range"
+                    id="volume"
+                    name="volume"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    className="w-8 h-20 appearance-slider-vertical"
+                    style={{
+                        writingMode: "vertical-lr",
+                        WebkitAppearance: 'slider-vertical',
+                        padding: '0 5px',
+                        transform: "rotate(180deg)"
+                    }}
+                />
             </div>
         </div>
     )
