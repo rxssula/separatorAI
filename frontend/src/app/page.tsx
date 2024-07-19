@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { poppins } from "./layout";
 import { Waveform } from "./components/waveform";
+import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
       <main>
         <LandingPage />
@@ -24,9 +24,9 @@ const LandingPage = () => {
               </p>
           </div>
           <div className="flex flex-row justify-center font-semibold h-full mt-16 container mx-auto">
-              <button className="text-white h-16 w-40 border-2 px-4 rounded-[100px] border-[#AAA9A9] hover:transition-shadow hover:shadow-md hover:shadow-[#AAA9A9] bg-transparent">SEE EXAMPLE</button>
+              <Link href="#examples"><button className="text-white h-16 w-40 border-2 px-4 rounded-[100px] border-[#AAA9A9] hover:transition-shadow hover:shadow-md hover:shadow-[#AAA9A9] bg-transparent">SEE EXAMPLE</button></Link>
               {/* <button className="text-white ml-5 h-16 w-40 px-4 rounded-[100px] bg-gradient-to-br from-[#ad5389] to-[#3c1053] border-[#AAA9A9] hover:transition-shadow hover:shadow-md hover:shadow-[#AAA9A9]">GET STARTED</button> */}
-              <button className="text-white ml-5 h-16 w-40 px-4 rounded-[100px] bg-gradient-to-br from-[#ad5389] to-[#3c1053] border-[#AAA9A9] hover:bg-gradient-to-r focus:ring-4 focus:ring-[#ad5389]">GET STARTED</button>
+              <Link href="/upload"><button className="text-white ml-5 h-16 w-40 px-4 rounded-[100px] bg-gradient-to-br from-[#ad5389] to-[#3c1053] border-[#AAA9A9] hover:bg-gradient-to-r focus:ring-4 focus:ring-[#ad5389]">GET STARTED</button></Link>
           </div>
         </div>
     );
@@ -34,7 +34,7 @@ const LandingPage = () => {
 
 const ExamplePage = () => {
     return (
-        <div style={{ minHeight: "90vh" }} className={`container mx-auto ${poppins.className} flex flex-col gap-4`}>
+        <div id="examples" style={{ minHeight: "90vh" }} className={`container mx-auto flex flex-col gap-4`}>
             <p className="text-4xl font-semibold">Examples</p>
             <p className="text-md w-3/4 mb-12">If you’re interested in music, want to know more about how music is made, and how its parts interact with each other my innovative product is just for you.</p>
             <Waveform title="Original song" audioUrl="/music/Кайрат Нуртас – Эх Қарындас-[AudioTrimmer.com].mp3" />

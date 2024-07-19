@@ -4,7 +4,7 @@ import "./globals.css";
 import { Navbar } from "./components/navbar";
 
 const inter = Inter({ subsets: ["latin"] });
-export const poppins = Poppins({
+const poppins = Poppins({
     weight: ['300', '400', '500', '600', '700'],
     subsets: ["latin"]
 })
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} ${poppins.className}`}>
       <Navbar />
       {children}
       </body>
