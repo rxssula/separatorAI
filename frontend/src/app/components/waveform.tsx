@@ -65,11 +65,11 @@ export const Waveform: React.FC<WaveformProps> = ({ audioUrl, title }) => {
                 <div className="flex flex-col place-content-between">
                     <button onClick={handlePlayPause}>
                         {isPlaying ?
-                            (<Image src="/icons/pause.svg" alt="pause" width={30} height={30} />) :
-                            (<Image src="/icons/play.svg" alt="play" width={30} height={30} />)}
+                            (<Image src="/icons/Pause.svg" alt="pause" width={30} height={30} />) :
+                            (<Image src="/icons/Play.svg" alt="play" width={30} height={30} />)}
                     </button>
                     <button onClick={handleDownload}>
-                        <Image src="/icons/download.svg" alt="download" width={30} height={30} />
+                        <Image src="/icons/Download.svg" alt="download" width={30} height={30} />
                     </button>
                 </div>
                 <input
