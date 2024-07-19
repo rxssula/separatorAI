@@ -37,7 +37,7 @@ const ExamplePage = () => {
         <div id="examples" style={{ minHeight: "90vh" }} className={`container mx-auto flex flex-col gap-4`}>
             <p className="text-4xl font-semibold">Examples</p>
             <p className="text-md w-3/4 mb-12">If you’re interested in music, want to know more about how music is made, and how its parts interact with each other my innovative product is just for you.</p>
-            <Waveform title="Original song" audioUrl="/music/Кайрат Нуртас – Эх Қарындас-[AudioTrimmer.com].mp3" />
+            <Waveform title="Original song" audioUrl="/music/original.mp3" />
             <div className="mt-16 flex flex-col gap-8">
                 <Waveform title="Bass" audioUrl="/music/bass.wav" />
                 <Waveform title="Drums" audioUrl="/music/drums.wav" />
