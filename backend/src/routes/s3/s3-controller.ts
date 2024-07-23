@@ -84,7 +84,6 @@ class S3Controller {
 
   UploadFile = async (req: Request, res: Response) => {
     const file = (req as any).file;
-    fs.mkdirSync("uploads")
     if (!file) {
       return res.status(400).send("No file uploaded.");
     }
