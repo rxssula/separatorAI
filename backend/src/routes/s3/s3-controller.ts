@@ -25,7 +25,7 @@ class S3Controller {
 
   UploadLink = async (req: Request, res: Response) => {
     const { link } = req.body;
-    const downloadDir = path.join(__dirname, "uploads");
+    const downloadDir = path.join(__dirname, "./uploads");
 
     try {
       // Extract the YouTube ID from the URL

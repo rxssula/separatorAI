@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@wavesurfer/react": "^1.0.7",
+    "axios": "^1.7.2",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
+    "react-dropzone": "^14.2.3",
     "wavesurfer.js": "^7.8.2"
   },
   "devDependencies": {
