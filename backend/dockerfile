@@ -30,8 +30,8 @@ COPY --from=build /app/package*.json ./
 # Install production dependencies
 RUN npm install --only=production
 
-# Copy Python scripts
-COPY --from=build /app/src/python-scripts ./src/python-scripts
+# Copy Python scripts to the dist directory
+COPY --from=build /app/src/python-scripts ./dist/python-scripts
 
 # Install Python dependencies
 COPY requirements.txt .
