@@ -90,8 +90,8 @@ class S3Controller {
 
     const audioBuffer = file.buffer;
     const filename = file.originalname;
-    const tempPath = path.join(__dirname, "./uploads", filename);
-    const outputPath = path.join(__dirname, "./output");
+    const tempPath = path.join("/app/dist/routes/s3/uploads", filename);
+    const outputPath = path.join("/app/dist/routes/s3/output");
 
     try {
       await saveFile(tempPath, audioBuffer);
