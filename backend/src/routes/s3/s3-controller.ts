@@ -25,7 +25,7 @@ class S3Controller {
 
   UploadLink = async (req: Request, res: Response) => {
     const { link } = req.body;
-    const downloadDir = path.join(__dirname, "./uploads");
+    const downloadDir = path.join(__dirname, "uploads");
 
     try {
       // Extract the YouTube ID from the URL
@@ -84,14 +84,16 @@ class S3Controller {
 
   UploadFile = async (req: Request, res: Response) => {
     const file = (req as any).file;
+    fs.mkdirSync("uploads")
+    fs.mkdirSync("output/hdemucs_mmi")
     if (!file) {
       return res.status(400).send("No file uploaded.");
     }
 
     const audioBuffer = file.buffer;
     const filename = file.originalname;
-    const tempPath = path.join("/app/dist/routes/s3/uploads", filename);
-    const outputPath = path.join("/app/dist/routes/s3/output");
+    const tempPath = path.join(__dirname, "./uploads", filename);
+    const outputPath = path.join(__dirname, "./output");
 
     try {
       await saveFile(tempPath, audioBuffer);
