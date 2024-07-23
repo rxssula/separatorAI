@@ -35,7 +35,7 @@ COPY --from=build /app/src/python-scripts ./src/python-scripts
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN python3 -m venv venv && . venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Expose the necessary port
 EXPOSE 3000
