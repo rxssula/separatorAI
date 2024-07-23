@@ -25,6 +25,7 @@ if __name__ == "__main__":
     try:
         audio_path = sys.argv[1]
         output_path = sys.argv[2]
+        print(audio_path, output_path)
         separate(audio_path, output_path)
     except Exception as e:
         print(f"An error occurred: {str(e)}")
