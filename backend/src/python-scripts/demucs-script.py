@@ -11,7 +11,7 @@ def separate(audio_path, output_path):
         "-o", output_path,
         "-n", "hdemucs_mmi"  # Specify the model
     ]
-    
+
     try:
         result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print("stdout:", result.stdout.decode('utf-8'))
@@ -22,6 +22,11 @@ def separate(audio_path, output_path):
         print("stderr:", e.stderr.decode('utf-8'))
 
 if __name__ == "__main__":
-    audio_path = sys.argv[1]
-    output_path = sys.argv[2]
-    separate(audio_path, output_path)
+    try:
+        audio_path = sys.argv[1]
+        output_path = sys.argv[2]
+        separate(audio_path, output_path)
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
