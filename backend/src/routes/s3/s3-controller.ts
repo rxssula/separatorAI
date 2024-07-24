@@ -97,7 +97,7 @@ class S3Controller {
 
     try {
       await saveFile(tempPath, audioBuffer);
-      console.log("Saved file locally");
+      console.log("Saved file locally", tempPath);
 
       const folderName = path.parse(filename).name;
 
