@@ -30,7 +30,7 @@ RUN npm run build
 RUN python3 --version
 RUN which python3
 RUN echo $PATH
-RUN pip3 list
+RUN pip3 list > pip_list.txt
 
 # Expose the necessary port
 EXPOSE 5000
