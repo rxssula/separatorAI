@@ -22,41 +22,15 @@ export const runDemucsScript = async (
   tempPath: string,
   outputPath: string
 ): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    console.log('Attempting to run Python script...');
-    console.log(`Command: python3 -m demucs ${tempPath} -o ${outputPath} -n hdemucs_mmi`);
+  const options: Options = {
+    mode: "text",
+    pythonOptions: ["-u"],
+    args: [tempPath, outputPath],
+  };
 
-    const pythonProcess = spawn('python3', [
-      '-m', 'demucs',
-      tempPath,
-      '-o', outputPath,
-      '-n', 'hdemucs_mmi'
-    ]);
-
-    pythonProcess.stdout.on('data', (data) => {
-      console.log(`Python stdout: ${data}`);
-    });
-
-    pythonProcess.stderr.on('data', (data) => {
-      console.error(`Python stderr: ${data}`);
-    });
-
-    pythonProcess.on('error', (error: any) => {
-      console.error(`Failed to start Python process: ${error}`);
-      console.error(`Error code: ${error.code}`);
-      console.error(`Error message: ${error.message}`);
-      console.error(`Error stack: ${error.stack}`);
-      reject(error);
-    });
-
-    pythonProcess.on('close', (code) => {
-      if (code === 0) {
-        console.log('Python script completed successfully');
-        resolve();
-      } else {
-        console.error(`Python process exited with code ${code}`);
-        reject(new Error(`Python process exited with code ${code}`));
-      }
-    });
+  return new Promise<void>((resolve, reject) => {
+    PythonShell.run(path.join(__dirname, "demucs-script.py"), options)
+      .then(() => resolve())
+      .catch((e) => reject(e));
   });
 };
