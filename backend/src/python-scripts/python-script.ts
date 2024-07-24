@@ -1,5 +1,6 @@
 import { PythonShell, Options } from "python-shell";
-import path, { resolve } from "path";
+import path from "path";
+import { spawn } from "child_process";
 
 export const runYoutubeScript = async (
   youtubeUrl: string,
@@ -21,15 +22,28 @@ export const runDemucsScript = async (
   tempPath: string,
   outputPath: string
 ): Promise<void> => {
-  const options: Options = {
-    mode: "text",
-    pythonOptions: ["-u"],
-    args: [tempPath, outputPath],
-  };
+  return new Promise((resolve, reject) => {
+    const pythonProcess = spawn('python3', [
+      '-m', 'demucs',
+      tempPath,
+      '-o', outputPath,
+      '-n', 'hdemucs_mmi'
+    ]);
 
-  return new Promise<void>((resolve, reject) => {
-    PythonShell.run(path.join(__dirname, "demucs-script.py"), options)
-      .then(() => resolve())
-      .catch((e) => reject(e));
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(`Python stdout: ${data}`);
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    pythonProcess.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Python process exited with code ${code}`));
+      }
+    });
   });
 };

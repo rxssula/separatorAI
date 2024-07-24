@@ -87,7 +87,6 @@ class S3Controller {
     if (!file) {
       return res.status(400).send("No file uploaded.");
     }
-
     const audioBuffer = file.buffer;
     const filename = file.originalname;
     const tempPath = path.join(__dirname, "./uploads", filename);
@@ -99,20 +98,13 @@ class S3Controller {
 
       const folderName = path.parse(filename).name;
 
-      // const originalFileLink = await this.s3Service.uploadFileToS3(
-      //   tempPath,
-      //   filename,
-      //   folderName
-      // );
-      // console.log("Uploaded original file to S3");
-
       console.log("Running Python script");
       await runDemucsScript(tempPath, outputPath);
 
       const files = await readOutputFiles(
         path.join(
           outputPath,
-          "/hdemucs_mmi",
+          "hdemucs_mmi",
           filename.substring(0, filename.length - 4)
         )
       );
@@ -125,12 +117,11 @@ class S3Controller {
       );
 
       const fileLinkLocations = fileLinks.map((link) => link.Location);
-      // const allFileLinks = [originalFileLink.Location, ...fileLinkLocations];
-      const allFileLinks = [...fileLinkLocations];
-      console.log(allFileLinks);
+
+      console.log(fileLinkLocations);
 
       await deleteFiles([...files, tempPath]);
-      await deleteFolder(path.join(outputPath, "/hdemucs_mmi", folderName));
+      await deleteFolder(path.join(outputPath, "hdemucs_mmi", folderName));
 
       res.status(200).json({
         message: "File was separated successfully",
