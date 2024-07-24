@@ -6,6 +6,7 @@ import cors from "cors";
 import path from "path";
 import fs from "fs";
 import { logger } from "./logger";
+import { execSync } from "child_process";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,16 +22,6 @@ const createRequiredDirectories = () => {
     }
   });
 };
-
-function logPipList() {
-  try {
-    const pipList = fs.readFileSync("/app/pip_list.txt", "utf8");
-    console.log("Installed Python packages:");
-    console.log(pipList);
-  } catch (error) {
-    console.error("Error reading pip list:", error);
-  }
-}
 
 connectDB();
 createRequiredDirectories();
@@ -49,7 +40,15 @@ app.get("/helloworld", (request, response) => {
   response.send("Hello World!");
 });
 
+app.get("/pip-list", (req, res) => {
+  try {
+    const pipList = execSync("pip3 list").toString();
+    res.send(pipList);
+  } catch (error: any) {
+    res.status(500).send("Error getting pip list: " + error.message);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server runs at http://localhost:${PORT}`);
-  logPipList();
 });
