@@ -83,10 +83,13 @@ class S3Controller {
   };
 
   UploadFile = async (req: Request, res: Response) => {
-    const file = (req as any).file;
-    if (!file) {
-      return res.status(400).send("No file uploaded.");
-    }
+      console.log('UploadFile function called');
+      const file = (req as any).file;
+      if (!file) {
+        console.log('No file uploaded');
+        return res.status(400).send("No file uploaded.");
+      }
+      console.log(`File received: ${file.originalname}`);
     const audioBuffer = file.buffer;
     const filename = file.originalname;
     const tempPath = path.join(__dirname, "./uploads", filename);
@@ -128,8 +131,9 @@ class S3Controller {
         files: fileLinks,
       });
     } catch (error: any) {
-      console.error(error);
-      res.status(500).send(error.message);
+        console.error('Error in UploadFile:', error);
+        console.error('Error stack:', error.stack);
+        res.status(500).send(error.message);
     }
   };
 

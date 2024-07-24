@@ -23,7 +23,10 @@ export const runDemucsScript = async (
   outputPath: string
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
-    const pythonProcess = spawn('python3', [
+    console.log('Attempting to run Python script...');
+    console.log(`Command: python3 -m demucs ${tempPath} -o ${outputPath} -n hdemucs_mmi`);
+
+    const pythonProcess = spawn('/usr/bin/python3', [
       '-m', 'demucs',
       tempPath,
       '-o', outputPath,
@@ -38,10 +41,17 @@ export const runDemucsScript = async (
       console.error(`Python stderr: ${data}`);
     });
 
+    pythonProcess.on('error', (error) => {
+      console.error(`Failed to start Python process: ${error}`);
+      reject(error);
+    });
+
     pythonProcess.on('close', (code) => {
       if (code === 0) {
+        console.log('Python script completed successfully');
         resolve();
       } else {
+        console.error(`Python process exited with code ${code}`);
         reject(new Error(`Python process exited with code ${code}`));
       }
     });

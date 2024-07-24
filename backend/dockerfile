@@ -3,6 +3,11 @@ FROM node:18
 # Install Python and pip
 RUN apt-get update && apt-get install -y python3 python3-pip
 
+# Add diagnostic commands
+RUN python3 --version
+RUN which python3
+RUN echo $PATH
+
 WORKDIR /app
 
 # Copy package.json and package-lock.json
@@ -23,6 +28,12 @@ RUN npm run build
 
 # Expose the necessary port
 EXPOSE 5000
+
+# Add more diagnostic commands before your CMD
+RUN python3 --version
+RUN which python3
+RUN echo $PATH
+RUN pip3 list
 
 # Start the application
 CMD ["node", "./dist/index.js"]
