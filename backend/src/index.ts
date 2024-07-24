@@ -42,7 +42,7 @@ app.get("/helloworld", (request, response) => {
 
 app.get("/pip-list", (req, res) => {
   try {
-    const pipList = execSync("pip3 list").toString();
+    const pipList = execSync("pip list").toString();
     res.send(pipList);
   } catch (error: any) {
     res.status(500).send("Error getting pip list: " + error.message);
