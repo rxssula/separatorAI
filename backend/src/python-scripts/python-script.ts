@@ -26,7 +26,7 @@ export const runDemucsScript = async (
     console.log('Attempting to run Python script...');
     console.log(`Command: python3 -m demucs ${tempPath} -o ${outputPath} -n hdemucs_mmi`);
 
-    const pythonProcess = spawn('/usr/bin/python3', [
+    const pythonProcess = spawn('python3', [
       '-m', 'demucs',
       tempPath,
       '-o', outputPath,
@@ -41,8 +41,11 @@ export const runDemucsScript = async (
       console.error(`Python stderr: ${data}`);
     });
 
-    pythonProcess.on('error', (error) => {
+    pythonProcess.on('error', (error: any) => {
       console.error(`Failed to start Python process: ${error}`);
+      console.error(`Error code: ${error.code}`);
+      console.error(`Error message: ${error.message}`);
+      console.error(`Error stack: ${error.stack}`);
       reject(error);
     });
 
