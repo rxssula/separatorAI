@@ -38,7 +38,7 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Expose the necessary port
-EXPOSE 3000
+EXPOSE 5000
 
 # Start the application
 CMD ["node", "./dist/index.js"]
