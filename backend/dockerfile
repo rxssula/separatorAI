@@ -32,6 +32,9 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Build the project
 RUN npm run build
 
+# Copy Python scripts to dist directory
+RUN mkdir -p /app/dist/python-scripts && cp /app/src/python-scripts/*.py /app/dist/python-scripts/
+
 # Expose the necessary port
 EXPOSE 5000
 
