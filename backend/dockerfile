@@ -4,10 +4,10 @@ FROM node:18
 RUN apt-get update && apt-get install -y python3 python3-pip
 
 # Verify Python installation
-RUN python --version
-RUN pip --version
-RUN which python
-RUN which pip
+RUN python3 --version
+RUN pip3 --version
+RUN which python3
+RUN which pip3
 RUN echo $PATH
 
 WORKDIR /app
@@ -23,24 +23,13 @@ COPY . .
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Build the project
 RUN npm run build
-
-# Verify Python installation again
-RUN python --version
-RUN pip --version
-RUN which python
-RUN which pip
-RUN echo $PATH
-RUN pip list > pip_list.txt
-
-# Make sure Python is in the PATH for the CMD
-ENV PATH="/usr/bin:${PATH}"
 
 # Expose the necessary port
 EXPOSE 5000
 
 # Start the application
-CMD ["sh", "-c", "python --version && pip list && node ./dist/index.js"]
+CMD ["sh", "-c", "python3 --version && pip3 list && node ./dist/index.js"]
