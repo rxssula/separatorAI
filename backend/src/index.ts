@@ -12,7 +12,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const createRequiredDirectories = () => {
-  const directories = ["routes", "routes/s3", "routes/s3/uploads"];
+  const directories = [
+    "routes",
+    "routes/s3",
+    "routes/s3/uploads",
+    "routes/s3/output",
+    "routes/s3/output/hdemucs_mmi",
+  ];
 
   directories.forEach((dir) => {
     const fullPath = path.join(__dirname, dir);
