@@ -1,10 +1,7 @@
 import { PythonShell, Options } from "python-shell";
 import path from "path";
+import { exec } from "child_process";
 
-const demucsScriptPath = path.join(
-  process.env.PYTHON_SCRIPTS_DIR!,
-  "demucs-script.py"
-);
 const youtubeScriptPath = path.join(
   process.env.PYTHON_SCRIPTS_DIR!,
   "yt-download.py"
@@ -30,15 +27,19 @@ export const runDemucsScript = async (
   tempPath: string,
   outputPath: string
 ): Promise<void> => {
-  const options: Options = {
-    mode: "text",
-    pythonOptions: ["-u"],
-    args: [tempPath, outputPath],
-  };
-
   return new Promise<void>((resolve, reject) => {
-    PythonShell.run(demucsScriptPath, options)
-      .then(() => resolve())
-      .catch((e) => reject(e));
+    exec(
+      `docker-compose run --rm python-app python /app/python-scripts/demucs-script.py ${tempPath} ${outputPath}`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(`exec error: ${error}`);
+          reject(error);
+          return;
+        }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+        resolve();
+      }
+    );
   });
 };
