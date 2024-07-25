@@ -12,6 +12,7 @@ import {
   runDemucsScript,
   runYoutubeScript,
 } from "../../python-scripts/python-script";
+import { readdir, stat } from "fs/promises";
 
 class S3Controller {
   private s3Service: S3Service;
@@ -121,10 +122,30 @@ class S3Controller {
       await runDemucsScript(tempPath, outputPath);
       console.log("Finished running Python script");
 
-      console.log("Reading output files");
       const outputDir = path.join(outputPath, "hdemucs_mmi");
+
+      let outputExists = false;
+      try {
+        const outputStats = await stat(outputDir);
+        if (outputStats.isDirectory()) {
+          const files = await readdir(outputDir);
+          outputExists = files.length > 0;
+        }
+      } catch (error) {
+        console.log("Output directory does not exist or is empty");
+      }
+
+      if (!outputExists) {
+        throw new Error("Python script did not produce expected output");
+      }
+
+      console.log("Reading output files");
       const files = await readOutputFiles(outputDir);
       console.log("Finished reading output files");
+
+      if (files.length === 0) {
+        throw new Error("No output files found after separation");
+      }
 
       console.log("Uploading to S3");
       const fileLinks = await Promise.all(
@@ -149,6 +170,25 @@ class S3Controller {
     } catch (error: any) {
       console.error("Error in UploadFile:", error);
       console.error("Error stack:", error.stack);
+
+      if (error.message === "Python script did not produce expected output") {
+        res
+          .status(500)
+          .send(
+            "Audio separation failed. Please try again or contact support."
+          );
+      } else if (error.message === "No output files found after separation") {
+        res
+          .status(500)
+          .send(
+            "Audio separation produced no output. Please try a different file or contact support."
+          );
+      } else {
+        res
+          .status(500)
+          .send("An error occurred during processing. Please try again later.");
+      }
+
       res.status(500).send(error.message);
     }
   };
