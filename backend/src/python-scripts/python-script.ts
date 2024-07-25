@@ -23,18 +23,17 @@ export const runDemucsScript = async (
   outputPath: string
 ): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
-    exec(
-      `docker-compose run --rm python-app python /app/python-scripts/demucs-script.py ${tempPath} ${outputPath}`,
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(`exec error: ${error}`);
-          reject(error);
-          return;
-        }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-        resolve();
+    const command = `python3 /app/dist/python-scripts/demucs-script.py ${tempPath} ${outputPath}`;
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        reject(error);
+        return;
       }
-    );
+      console.log(`stdout: ${stdout}`);
+      console.error(`stderr: ${stderr}`);
+      resolve();
+    });
   });
 };
