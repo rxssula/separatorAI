@@ -1,6 +1,14 @@
 import { PythonShell, Options } from "python-shell";
 import path from "path";
-import { spawn } from "child_process";
+
+const demucsScriptPath = path.join(
+  process.env.PYTHON_SCRIPTS_DIR!,
+  "demucs-script.py"
+);
+const youtubeScriptPath = path.join(
+  process.env.PYTHON_SCRIPTS_DIR!,
+  "yt-download.py"
+);
 
 export const runYoutubeScript = async (
   youtubeUrl: string,
@@ -29,7 +37,7 @@ export const runDemucsScript = async (
   };
 
   return new Promise<void>((resolve, reject) => {
-    PythonShell.run(path.join(__dirname, "demucs-script.py"), options)
+    PythonShell.run(demucsScriptPath, options)
       .then(() => resolve())
       .catch((e) => reject(e));
   });
