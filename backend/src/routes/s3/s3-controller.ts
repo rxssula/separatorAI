@@ -7,7 +7,7 @@ import {
   readOutputFiles,
   saveFile,
 } from "../files/files-service";
-import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 import {
   runDemucsScript,
   runYoutubeScript,
@@ -103,50 +103,48 @@ class S3Controller {
       return res.status(400).send("No file uploaded.");
     }
     console.log(`File received: ${file.originalname}`);
+
     const audioBuffer = file.buffer;
-    const filename = file.originalname;
-    const tempPath = path.join(__dirname, "./uploads", filename);
+    const originalFilename = file.originalname;
+    const fileExtension = path.extname(originalFilename);
+    const uniqueId = uuidv4();
+    const uniqueFilename = `${uniqueId}${fileExtension}`;
+
+    const tempPath = path.join(__dirname, "./uploads", uniqueFilename);
     const outputPath = path.join(__dirname, "./output");
 
     try {
       await saveFile(tempPath, audioBuffer);
       console.log("Saved file locally", tempPath);
 
-      const folderName = path.parse(filename).name;
-
       console.log("Running Python script");
       await runDemucsScript(tempPath, outputPath);
       console.log("Finished running Python script");
 
       console.log("Reading output files");
-      const files = await readOutputFiles(
-        path.join(
-          outputPath,
-          "hdemucs_mmi",
-          filename.substring(0, filename.length - 4)
-        )
-      );
+      const outputDir = path.join(outputPath, "hdemucs_mmi", uniqueId);
+      const files = await readOutputFiles(outputDir);
       console.log("Finished reading output files");
 
       console.log("Uploading to S3");
       const fileLinks = await Promise.all(
         files.map((filepath) => {
           const filename = path.basename(filepath);
-          return this.s3Service.uploadFileToS3(filepath, filename, folderName);
+          return this.s3Service.uploadFileToS3(filepath, filename, uniqueId);
         })
       );
       console.log("Finished uploading to S3");
 
       const fileLinkLocations = fileLinks.map((link) => link.Location);
-
       console.log(fileLinkLocations);
 
       await deleteFiles([...files, tempPath]);
-      await deleteFolder(path.join(outputPath, "hdemucs_mmi", folderName));
+      await deleteFolder(outputDir);
 
       res.status(200).json({
         message: "File was separated successfully",
         files: fileLinks,
+        originalFilename: originalFilename,
       });
     } catch (error: any) {
       console.error("Error in UploadFile:", error);
