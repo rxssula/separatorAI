@@ -23,7 +23,7 @@ export const runDemucsScript = async (
   outputPath: string
 ): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
-    const command = `python3 /app/dist/python-scripts/demucs-script.py ${tempPath} ${outputPath}`;
+    const command = `python3 /app/src/python-scripts/demucs-script.py ${tempPath} ${outputPath}`;
 
     exec(command, (error, stdout, stderr) => {
       if (error) {
