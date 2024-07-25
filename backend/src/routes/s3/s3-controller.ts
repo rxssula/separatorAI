@@ -122,7 +122,7 @@ class S3Controller {
       console.log("Finished running Python script");
 
       console.log("Reading output files");
-      const outputDir = path.join(outputPath, "hdemucs_mmi", uniqueId);
+      const outputDir = path.join(outputPath, "hdemucs_mmi");
       const files = await readOutputFiles(outputDir);
       console.log("Finished reading output files");
 
