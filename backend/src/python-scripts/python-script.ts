@@ -2,11 +2,6 @@ import { PythonShell, Options } from "python-shell";
 import path from "path";
 import { exec } from "child_process";
 
-const youtubeScriptPath = path.join(
-  process.env.PYTHON_SCRIPTS_DIR!,
-  "yt-download.py"
-);
-
 export const runYoutubeScript = async (
   youtubeUrl: string,
   outputPath: string
