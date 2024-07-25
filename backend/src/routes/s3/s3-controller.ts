@@ -7,8 +7,11 @@ import {
   readOutputFiles,
   saveFile,
 } from "../files/files-service";
-import fs from "fs"
-import { runDemucsScript, runYoutubeScript } from "../../python-scripts/python-script";
+import fs from "fs";
+import {
+  runDemucsScript,
+  runYoutubeScript,
+} from "../../python-scripts/python-script";
 
 class S3Controller {
   private s3Service: S3Service;
@@ -17,10 +20,12 @@ class S3Controller {
     this.s3Service = s3Service;
   }
 
-    // Function to extract YouTube ID from the URL
+  // Function to extract YouTube ID from the URL
   private extractYouTubeID = (url: string): string => {
-    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : '';
+    const match = url.match(
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    return match ? match[1] : "";
   };
 
   UploadLink = async (req: Request, res: Response) => {
@@ -50,18 +55,26 @@ class S3Controller {
       console.log("Finished running Python script");
 
       // Step 3: Read the separated files from the output directory
-      const separatedFilesDir = path.join(outputPath, "/hdemucs_mmi", folderName);
+      const separatedFilesDir = path.join(
+        outputPath,
+        "/hdemucs_mmi",
+        folderName
+      );
       const separatedFiles = await readOutputFiles(separatedFilesDir);
 
       // Step 4: Upload the separated stems to S3
-      console.log("Uploading files to s3...")
+      console.log("Uploading files to s3...");
       const fileLinks = await Promise.all(
         separatedFiles.map((filepath) => {
           const filename = path.basename(filepath);
-          return this.s3Service.uploadFileToS3WithStream(filepath, filename, folderName);
+          return this.s3Service.uploadFileToS3WithStream(
+            filepath,
+            filename,
+            folderName
+          );
         })
       );
-      console.log("Uploaded files to s3")
+      console.log("Uploaded files to s3");
 
       const fileLinkLocations = fileLinks.map((link) => link.Location);
       const allFileLinks = [...fileLinkLocations];
@@ -83,13 +96,13 @@ class S3Controller {
   };
 
   UploadFile = async (req: Request, res: Response) => {
-      console.log('UploadFile function called');
-      const file = (req as any).file;
-      if (!file) {
-        console.log('No file uploaded');
-        return res.status(400).send("No file uploaded.");
-      }
-      console.log(`File received: ${file.originalname}`);
+    console.log("UploadFile function called");
+    const file = (req as any).file;
+    if (!file) {
+      console.log("No file uploaded");
+      return res.status(400).send("No file uploaded.");
+    }
+    console.log(`File received: ${file.originalname}`);
     const audioBuffer = file.buffer;
     const filename = file.originalname;
     const tempPath = path.join(__dirname, "./uploads", filename);
@@ -103,7 +116,9 @@ class S3Controller {
 
       console.log("Running Python script");
       await runDemucsScript(tempPath, outputPath);
+      console.log("Finished running Python script");
 
+      console.log("Reading output files");
       const files = await readOutputFiles(
         path.join(
           outputPath,
@@ -111,13 +126,16 @@ class S3Controller {
           filename.substring(0, filename.length - 4)
         )
       );
+      console.log("Finished reading output files");
 
+      console.log("Uploading to S3");
       const fileLinks = await Promise.all(
         files.map((filepath) => {
           const filename = path.basename(filepath);
           return this.s3Service.uploadFileToS3(filepath, filename, folderName);
         })
       );
+      console.log("Finished uploading to S3");
 
       const fileLinkLocations = fileLinks.map((link) => link.Location);
 
@@ -131,9 +149,9 @@ class S3Controller {
         files: fileLinks,
       });
     } catch (error: any) {
-        console.error('Error in UploadFile:', error);
-        console.error('Error stack:', error.stack);
-        res.status(500).send(error.message);
+      console.error("Error in UploadFile:", error);
+      console.error("Error stack:", error.stack);
+      res.status(500).send(error.message);
     }
   };
 
