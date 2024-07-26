@@ -22,18 +22,14 @@ export const runDemucsScript = async (
   tempPath: string,
   outputPath: string
 ): Promise<void> => {
+  const options: Options = {
+    mode: "text",
+    pythonOptions: ["-u"],
+    args: [tempPath, outputPath],
+  };
   return new Promise<void>((resolve, reject) => {
-    const command = `python3 /app/src/python-scripts/demucs-script.py ${tempPath} ${outputPath}`;
-
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`exec error: ${error}`);
-        reject(error);
-        return;
-      }
-      console.log(`stdout: ${stdout}`);
-      console.error(`stderr: ${stderr}`);
-      resolve();
-    });
+    PythonShell.run(path.join(__dirname, "demucs-script.py"), options)
+      .then(() => resolve())
+      .catch((e) => reject(e));
   });
 };
