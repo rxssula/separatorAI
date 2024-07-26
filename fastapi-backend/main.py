@@ -28,7 +28,6 @@ async def process_file(background_tasks: BackgroundTasks, file: UploadFile = Fil
         file_location = f"/tmp/{file.filename}"
         with open(file_location, "wb") as f:
             f.write(await file.read())
-
         logging.info(f"File saved to {file_location}")
 
         temp_output_path = "/tmp/output"
@@ -44,8 +43,11 @@ async def process_file(background_tasks: BackgroundTasks, file: UploadFile = Fil
             "-n", "hdemucs_mmi", 
             "--filename", "{track}_{stem}.{ext}"
         ]
+        logging.info(f"Running command: {' '.join(cmd)}")
+
         result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        logging.info("Demucs script completed")
+        logging.info(f"Demucs script completed with output: {result.stdout.decode('utf-8')}")
+        logging.error(f"Demucs script errors: {result.stderr.decode('utf-8')}")
 
         # Create a zip file containing the separated tracks
         zip_file_path = f"/tmp/{file.filename}_separated.zip"
@@ -65,7 +67,10 @@ async def process_file(background_tasks: BackgroundTasks, file: UploadFile = Fil
 
     except subprocess.CalledProcessError as e:
         logging.error(f"Subprocess error: {e}")
+        logging.error(f"Subprocess stdout: {e.stdout.decode('utf-8')}")
+        logging.error(f"Subprocess stderr: {e.stderr.decode('utf-8')}")
         return {"error": str(e), "stdout": e.stdout.decode('utf-8'), "stderr": e.stderr.decode('utf-8')}
     except Exception as e:
         logging.error(f"General error: {e}")
         return {"error": str(e)}
+
