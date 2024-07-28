@@ -5,10 +5,9 @@ import { Navbar } from "./components/navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 const poppins = Poppins({
-    weight: ['300', '400', '500', '600', '700'],
-    subsets: ["latin"]
-})
-
+  weight: ["300", "400", "500", "600", "700"],
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "trome",
@@ -23,8 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} ${poppins.className}`}>
-      <Navbar />
-      {children}
+        <Navbar />
+        {children}
       </body>
     </html>
   );
