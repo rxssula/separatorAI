@@ -52,7 +52,7 @@ const ExamplePage = () => {
     <div id="examples" className="container mx-auto flex flex-col gap-4 py-16">
       <p className="text-2xl md:text-4xl font-semibold">Examples</p>
       <p className="text-md md:w-3/4 mb-8 md:mb-12">
-        If you're interested in music, want to know more about how music is
+        If you&apos;re interested in music, want to know more about how music is
         made, and how its parts interact with each other my innovative product
         is just for you.
       </p>
