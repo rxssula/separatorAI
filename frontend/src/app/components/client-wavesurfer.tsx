@@ -4,28 +4,25 @@ import * as React from "react";
 const { useMemo, useEffect, useRef } = React;
 import { useWavesurfer } from "@wavesurfer/react";
 import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
-import { FC, useState } from "react";
+import { FC, useCallback, useState } from "react";
+import { WavesurferProps } from "./waveform";
 
 const formatTime = (seconds: number) =>
   [seconds / 60, seconds % 60]
     .map((v) => `0${Math.floor(v)}`.slice(-2))
     .join(":");
 
-interface WavesurferProps {
-  audioUrl: string;
-  title: string;
-  isPlaying: boolean;
-  onReady: (wavesurfer: any) => void;
-}
-
 const ClientWavesurfer: FC<WavesurferProps> = ({
   audioUrl,
   title,
-  isPlaying,
   onReady,
+  onTimeUpdate,
+  currentTime,
 }) => {
   const containerRef = useRef(null);
   const [volume, setVolume] = useState(1);
+  const [isReady, setIsReady] = useState(false);
+  const [localCurrentTime, setLocalCurrentTime] = useState(0);
 
   const getColors = (title: string) => {
     switch (title.toLowerCase()) {
@@ -64,31 +61,59 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
 
   const colors = getColors(title);
 
-  const { wavesurfer, currentTime } = useWavesurfer({
+  const { wavesurfer } = useWavesurfer({
     container: containerRef,
     height: 80,
     waveColor: colors.waveColor,
     progressColor: colors.progressColor,
-    barWidth: 2,
-    barGap: 1,
-    barRadius: 0,
     url: audioUrl,
     plugins: useMemo(() => [Timeline.create()], []),
   });
 
+  const handleTimeUpdate = useCallback(
+    (time: number) => {
+      setLocalCurrentTime(time);
+      onTimeUpdate(time);
+    },
+    [onTimeUpdate]
+  );
+
   useEffect(() => {
-    if (wavesurfer) {
+    if (wavesurfer && !isReady) {
+      setIsReady(true);
       onReady(wavesurfer);
       wavesurfer.setVolume(volume);
+      wavesurfer.on("audioprocess", () => {
+        handleTimeUpdate(wavesurfer.getCurrentTime());
+      });
+      wavesurfer.on("seeking", () => {
+        handleTimeUpdate(wavesurfer.getCurrentTime());
+      });
     }
-  }, [wavesurfer, onReady, volume]);
+  }, [wavesurfer, onReady, volume, isReady, handleTimeUpdate]);
+
+  useEffect(() => {
+    if (
+      wavesurfer &&
+      isReady &&
+      Math.abs(localCurrentTime - currentTime) > 0.5
+    ) {
+      const duration = wavesurfer.getDuration();
+      if (duration > 0) {
+        wavesurfer.seekTo(currentTime / duration);
+      }
+    }
+  }, [currentTime, wavesurfer, isReady, localCurrentTime]);
+
+  useEffect(() => {
+    if (wavesurfer) {
+      wavesurfer.setVolume(volume);
+    }
+  }, [volume, wavesurfer]);
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = Number(e.target.value);
     setVolume(newVolume);
-    if (wavesurfer) {
-      wavesurfer.setVolume(newVolume);
-    }
   };
 
   return (

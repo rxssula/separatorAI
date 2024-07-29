@@ -2,7 +2,7 @@
 
 import Wavesurfer from "@/app/components/waveform";
 import { FC, useState, useCallback, useEffect } from "react";
-import { motion } from "framer-motion";
+import WaveSurfer from "wavesurfer.js";
 
 interface ExampleProps {
   params: { id: number };
@@ -19,7 +19,20 @@ const audios = [
 
 const Example: FC<ExampleProps> = ({ params }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [wavesurfers, setWavesurfers] = useState<any[]>([]);
+  const [wavesurfers, setWavesurfers] = useState<WaveSurfer[]>([]);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  const handleTimeUpdate = (time: number) => {
+    setCurrentTime(time);
+    wavesurfers.forEach((ws) => {
+      if (Math.abs(ws.getCurrentTime() - time) > 0.5) {
+        const duration = ws.getDuration();
+        if (duration > 0) {
+          ws.seekTo(time / duration);
+        }
+      }
+    });
+  };
 
   const handleReady = useCallback((wavesurfer: any) => {
     setWavesurfers((prev) => [...prev, wavesurfer]);
@@ -40,6 +53,8 @@ const Example: FC<ExampleProps> = ({ params }) => {
             title={title}
             isPlaying={isPlaying}
             onReady={handleReady}
+            onTimeUpdate={handleTimeUpdate}
+            currentTime={currentTime}
           />
         ))}
       </div>

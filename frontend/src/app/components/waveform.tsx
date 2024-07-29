@@ -5,11 +5,13 @@ const ClientWavesurfer = dynamic(() => import("./client-wavesurfer"), {
   ssr: false,
 });
 
-interface WavesurferProps {
+export interface WavesurferProps {
   audioUrl: string;
   title: string;
   isPlaying: boolean;
   onReady: (wavesurfer: any) => void;
+  onTimeUpdate: (time: number) => void;
+  currentTime: number;
 }
 
 const Wavesurfer: React.FC<WavesurferProps> = (props) => {
