@@ -1,95 +1,77 @@
-"use client"
+"use client";
 
-import { useWavesurfer, WavesurferProps } from "@wavesurfer/react"
-import dynamic from "next/dynamic"
-import Image from "next/image"
-import { useCallback, useRef, useState } from "react"
+import * as React from "react";
+const { useMemo, useEffect, useRef } = React;
+import { useWavesurfer } from "@wavesurfer/react";
+import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
+import { FC } from "react";
 
-const WaveSurfer = dynamic<WavesurferProps>(() => import('@wavesurfer/react'), { ssr: false })
+const formatTime = (seconds: number) =>
+  [seconds / 60, seconds % 60]
+    .map((v) => `0${Math.floor(v)}`.slice(-2))
+    .join(":");
 
-interface WaveformProps {
-    audioUrl: string;
-    title: string;
+interface WavesurferProps {
+  audioUrl: string;
+  title: string;
+  isPlaying: boolean;
+  onReady: (wavesurfer: any) => void;
 }
 
-export const Waveform: React.FC<WaveformProps> = ({ audioUrl, title }) => {
-    const [isPlaying, setIsPlaying] = useState<boolean>(false);
-    const [volume, setVolume] = useState<number>(1);
+const Wavesurfer: FC<WavesurferProps> = ({
+  audioUrl,
+  title,
+  isPlaying,
+  onReady,
+}) => {
+  const containerRef = useRef(null);
 
-    const wavesurferRef = useRef<any>(null);
+  const { wavesurfer, currentTime } = useWavesurfer({
+    container: containerRef,
+    height: 100,
+    waveColor: "rgb(200, 0, 200)",
+    progressColor: "rgb(100, 0, 100)",
+    url: audioUrl,
+    plugins: useMemo(() => [Timeline.create()], []),
+  });
 
-    const onReady = useCallback((wavesurfer: any) => {
-        wavesurferRef.current = wavesurfer;
-        console.log("Wavesurfer is ready")
-    }, [])
-
-    const handlePlayPause = () => {
-        if (wavesurferRef.current) {
-            wavesurferRef.current.playPause();
-            setIsPlaying(!isPlaying);
-        }
+  useEffect(() => {
+    if (wavesurfer) {
+      onReady(wavesurfer);
     }
+  }, [wavesurfer, onReady]);
 
-    const handleDownload = () => {
-        const link = document.createElement('a');
-        link.href = audioUrl;
-        link.download = 'audio.mp3'; // You can set a custom filename here
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+  useEffect(() => {
+    if (wavesurfer) {
+      if (isPlaying) {
+        wavesurfer.play();
+      } else {
+        wavesurfer.pause();
+      }
+    }
+  }, [isPlaying, wavesurfer]);
 
-    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newVolume = parseFloat(e.target.value);
-        setVolume(newVolume);
-        if (wavesurferRef.current) {
-            wavesurferRef.current.setVolume(newVolume);
-        }
-    };
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (wavesurfer) {
+      wavesurfer.setVolume(Number(e.target.value));
+    }
+  };
 
-    return (
-        <div className="grid grid-cols-[120px_1fr_100px] gap-4 items-center">
-            <p className="text-left">{title}</p>
-            <div className="relative w-full">
-                <WaveSurfer
-                    height={80}
-                    waveColor="rgb(102, 102, 102)"
-                    progressColor="rgb(187, 187, 187)"
-                    cursorColor="white"
-                    url={audioUrl}
-                    onReady={onReady}
-                    backend="MediaElement"
-                />
-            </div>
-            <div className="flex flex-row gap-4 justify-end">
-                <div className="flex flex-col place-content-between">
-                    <button onClick={handlePlayPause}>
-                        {isPlaying ?
-                            (<Image src="/icons/Pause.svg" alt="pause" width={30} height={30} />) :
-                            (<Image src="/icons/Play.svg" alt="play" width={30} height={30} />)}
-                    </button>
-                    <button onClick={handleDownload}>
-                        <Image src="/icons/Download.svg" alt="download" width={30} height={30} />
-                    </button>
-                </div>
-                <input
-                    type="range"
-                    id="volume"
-                    name="volume"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={volume}
-                    onChange={handleVolumeChange}
-                    className="w-8 h-20 appearance-slider-vertical"
-                    style={{
-                        writingMode: "vertical-lr",
-                        WebkitAppearance: 'slider-vertical',
-                        padding: '0 5px',
-                        transform: "rotate(180deg)"
-                    }}
-                />
-            </div>
-        </div>
-    )
-}
+  return (
+    <div>
+      <div ref={containerRef} />
+      <p>Current audio: {title}</p>
+      <p>Current time: {formatTime(currentTime)}</p>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        defaultValue="1"
+        onChange={handleVolumeChange}
+      />
+    </div>
+  );
+};
+
+export default Wavesurfer;

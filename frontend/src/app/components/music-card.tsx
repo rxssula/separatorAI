@@ -1,6 +1,11 @@
 import Image from "next/image";
+import { FC } from "react";
 
-export const Card = () => {
+interface CardProps {
+  id: number;
+}
+
+export const Card: FC<CardProps> = ({ id }) => {
   return (
     <div className="flex flex-col items-center w-full">
       <div className="relative w-full pb-[100%]">
