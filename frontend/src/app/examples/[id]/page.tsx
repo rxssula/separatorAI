@@ -1,7 +1,8 @@
 "use client";
 
 import Wavesurfer from "@/app/components/waveform";
-import { FC, useState, useCallback } from "react";
+import { FC, useState, useCallback, useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface ExampleProps {
   params: { id: number };
@@ -9,13 +10,10 @@ interface ExampleProps {
 
 const audios = [
   {
-    vocals:
-      "https://separatoraibucket.s3.eu-north-1.amazonaws.com/c12d6a8a-a181-4448-a171-fcf054c56831/vocals.wav",
-    bass: "https://separatoraibucket.s3.eu-north-1.amazonaws.com/9602844b-8cd4-4823-80e8-d9b6245503ca/bass.wav",
-    drums:
-      "https://separatoraibucket.s3.eu-north-1.amazonaws.com/4a97db55-4732-4bf1-9b62-6f17a6cd54e1/drums.wav",
-    other:
-      "https://separatoraibucket.s3.eu-north-1.amazonaws.com/66f5465b-ba2c-4c44-87bb-be5863565881/other.wav",
+    Vocals: "/music/vocals.wav",
+    Bass: "/music/bass.wav",
+    Drums: "/music/drums.wav",
+    Other: "/music/other.wav",
   },
 ];
 
@@ -29,22 +27,28 @@ const Example: FC<ExampleProps> = ({ params }) => {
 
   const handlePlayPause = () => {
     setIsPlaying((prev) => !prev);
+    wavesurfers.forEach((ws) => (isPlaying ? ws.pause() : ws.play()));
   };
 
   return (
-    <div>
-      <button onClick={handlePlayPause}>
+    <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+      <div className="flex flex-col gap-2 sm:gap-4">
+        {Object.entries(audios[params.id]).map(([title, url], index) => (
+          <Wavesurfer
+            key={title}
+            audioUrl={url}
+            title={title}
+            isPlaying={isPlaying}
+            onReady={handleReady}
+          />
+        ))}
+      </div>
+      <button
+        onClick={handlePlayPause}
+        className="mt-4 w-full sm:w-auto px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300"
+      >
         {isPlaying ? "Pause All" : "Play All"}
       </button>
-      {Object.entries(audios[params.id]).map(([title, url]) => (
-        <Wavesurfer
-          key={title}
-          audioUrl={url}
-          title={title}
-          isPlaying={isPlaying}
-          onReady={handleReady}
-        />
-      ))}
     </div>
   );
 };

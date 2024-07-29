@@ -10,3 +10,29 @@ body {
     background-color: #161217;
     color: #AAA9A9;
 }
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 5px;
+    outline: none;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #AAA9A9;
+    cursor: pointer;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #AAA9A9;
+    cursor: pointer;
+  }

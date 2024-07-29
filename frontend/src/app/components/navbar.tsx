@@ -10,10 +10,12 @@ export const Navbar: React.FC = () => {
   return (
     <div className="text-white">
       <div className="flex flex-row justify-between items-center pt-7 px-4 sm:px-8 lg:px-28">
-        <div className="text-xl font-medium flex flex-row gap-2 place-items-center">
-          <Image src="/images/logo.svg" alt="logo" width={35} height={35} />
-          trome
-        </div>
+        <Link href="/">
+          <div className="text-xl font-medium flex flex-row gap-2 place-items-center">
+            <Image src="/images/logo.svg" alt="logo" width={35} height={35} />
+            trome
+          </div>
+        </Link>
 
         {/* Hamburger menu for mobile and medium screens */}
         <div className="lg:hidden">
