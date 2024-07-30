@@ -96,7 +96,7 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
     if (
       wavesurfer &&
       isReady &&
-      Math.abs(localCurrentTime - currentTime) > 0.1
+      Math.abs(localCurrentTime - currentTime) > 0.5
     ) {
       const duration = wavesurfer.getDuration();
       if (duration > 0) {
