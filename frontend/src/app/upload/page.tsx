@@ -4,17 +4,49 @@ import Image from "next/image";
 import { useRef, useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
+import ResultsPage from "../components/result-page";
 
 export default function UploadPage() {
+  const [showResults, setShowResults] = useState(false);
+  const [audioTracks, setAudioTracks] = useState<{
+    vocals: string;
+    bass: string;
+    drums: string;
+    other: string;
+  }>({
+    vocals: "",
+    bass: "",
+    drums: "",
+    other: "",
+  });
+
+  if (showResults) {
+    return <ResultsPage audioTracks={audioTracks} />;
+  }
+
   return (
     <div className="pt-32 container mx-auto">
-      <FileUpload />
-      <YouTubeEmbed />
+      <FileUpload
+        setShowResults={setShowResults}
+        setAudioTracks={setAudioTracks}
+      />
+      <YouTubeEmbed
+        setShowResults={setShowResults}
+        setAudioTracks={setAudioTracks}
+      />
     </div>
   );
 }
 
-const FileUpload: React.FC = () => {
+const FileUpload: React.FC<{
+  setShowResults: (show: boolean) => void;
+  setAudioTracks: (tracks: {
+    vocals: string;
+    bass: string;
+    drums: string;
+    other: string;
+  }) => void;
+}> = ({ setShowResults, setAudioTracks }) => {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
@@ -58,8 +90,8 @@ const FileUpload: React.FC = () => {
         }
       );
       setUploadStatus("File uploaded successfully!");
-      // Handle the response as needed
-      console.log(response.data);
+      setAudioTracks(response.data);
+      setShowResults(true);
     } catch (error) {
       setUploadStatus("Upload failed.");
       setError("An error occurred while uploading the file.");
@@ -106,13 +138,29 @@ const FileUpload: React.FC = () => {
   );
 };
 
-const YouTubeEmbed: React.FC = () => {
+const YouTubeEmbed: React.FC<{
+  setShowResults: (show: boolean) => void;
+  setAudioTracks: (tracks: {
+    vocals: string;
+    bass: string;
+    drums: string;
+    other: string;
+  }) => void;
+}> = ({ setShowResults, setAudioTracks }) => {
   const [url, setUrl] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Process YouTube link here
-    console.log("Processing URL:", url);
+    try {
+      const response = await axios.post(
+        "https://fastapi-backend-trome-production.up.railway.app/separate/",
+        { url }
+      );
+      setAudioTracks(response.data);
+      setShowResults(true);
+    } catch (error) {
+      console.error("YouTube processing error:", error);
+    }
   };
 
   return (
