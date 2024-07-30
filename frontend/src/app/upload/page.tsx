@@ -154,7 +154,13 @@ const YouTubeEmbed: React.FC<{
     try {
       const response = await axios.post(
         "https://fastapi-backend-trome-production.up.railway.app/separate-youtube/",
-        { url }
+        { url },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
       );
       setAudioTracks(response.data);
       setShowResults(true);
