@@ -153,7 +153,7 @@ const YouTubeEmbed: React.FC<{
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://fastapi-backend-trome-production.up.railway.app/separate/",
+        "https://fastapi-backend-trome-production.up.railway.app/separate-youtube/",
         { url }
       );
       setAudioTracks(response.data);

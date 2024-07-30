@@ -18,7 +18,7 @@ export const Navbar: React.FC = () => {
         </Link>
 
         {/* Hamburger menu for mobile and medium screens */}
-        <div className="lg:hidden">
+        {/* <div className="lg:hidden">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="focus:outline-none"
@@ -38,10 +38,10 @@ export const Navbar: React.FC = () => {
               />
             </svg>
           </button>
-        </div>
+        </div> */}
 
         {/* Desktop navigation */}
-        <div className="hidden lg:flex items-center flex-1 justify-center text-md">
+        {/* <div className="hidden lg:flex items-center flex-1 justify-center text-md">
           <Link className="px-5" href="#">
             Music Separation
           </Link>
@@ -51,20 +51,20 @@ export const Navbar: React.FC = () => {
           <Link className="px-5" href="#">
             Piano + Guitar
           </Link>
-        </div>
+        </div> */}
 
         {/* Try Demo button for large screens */}
-        <div className="hidden lg:block">
+        {/* <div className="hidden lg:block">
           <Link href="/upload">
             <button className="text-white text-sm px-4 py-2 rounded-full border-solid border-2 border-[#AAA9A9]">
               Try Demo
             </button>
           </Link>
-        </div>
+        </div> */}
       </div>
 
       {/* Mobile and medium screen menu */}
-      {isMenuOpen && (
+      {/* {isMenuOpen && (
         <div className="lg:hidden py-4 px-5">
           <Link className="block px-4 py-2" href="#">
             Music Separation
@@ -76,7 +76,7 @@ export const Navbar: React.FC = () => {
             Piano + Guitar
           </Link>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
