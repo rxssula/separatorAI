@@ -28,7 +28,7 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="pt-32 container mx-auto">
+    <div className="pt-5 md:pt-20 container mx-auto">
       {isLoading && <Loader message={loadingMessage} />}
       <FileUpload
         setShowResults={setShowResults}

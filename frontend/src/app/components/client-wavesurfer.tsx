@@ -18,6 +18,8 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
   const containerRef = useRef(null);
   const [volume, setVolume] = useState(1);
   const [isReady, setIsReady] = useState(false);
+  const [loadingPercentage, setLoadingPercentage] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const getColors = (title: string) => {
     switch (title.toLowerCase()) {
@@ -54,7 +56,7 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
     }
   };
 
-  const colors = getColors(title);
+  const colors = useMemo(() => getColors(title), [title, getColors]);
 
   const { wavesurfer } = useWavesurfer({
     container: containerRef,
@@ -64,16 +66,31 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
     url: audioUrl,
     plugins: useMemo(() => [Timeline.create()], []),
     backend: "MediaElement",
+    interact: true,
   });
 
   useEffect(() => {
     if (wavesurfer && !isReady) {
-      setIsReady(true);
-      onReady(wavesurfer);
-      wavesurfer.setVolume(volume);
+      wavesurfer.on("ready", () => {
+        setIsReady(true);
+        onReady(wavesurfer);
+        wavesurfer.setVolume(volume);
+      });
+
+      wavesurfer.on("error", (err) => {
+        console.error("Wavesurfer error:", err);
+        setError(`Error loading audio: ${err}`);
+      });
+
+      wavesurfer.on("loading", (percentage) => {
+        console.log(`Loading: ${percentage}%`);
+        setLoadingPercentage(percentage);
+      });
+
       wavesurfer.on("audioprocess", () => {
         onTimeUpdate(wavesurfer.getCurrentTime());
       });
+
       wavesurfer.on("seeking", () => {
         onTimeUpdate(wavesurfer.getCurrentTime());
       });
@@ -140,7 +157,16 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
           }}
         />
       </div>
-      <div ref={containerRef} className="w-full flex-grow" />
+      <div ref={containerRef} className="w-full h-full" />
+      {(loadingPercentage < 100 || error) && (
+        <div className="inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          {error ? (
+            <div className="text-red-500">{error}</div>
+          ) : (
+            <div className="text-white">Loading: {loadingPercentage}%</div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
