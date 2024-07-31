@@ -7,14 +7,10 @@ import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
 import { FC, useCallback, useState } from "react";
 import { WavesurferProps } from "./waveform";
 
-const formatTime = (seconds: number) =>
-  [seconds / 60, seconds % 60]
-    .map((v) => `0${Math.floor(v)}`.slice(-2))
-    .join(":");
-
 const ClientWavesurfer: FC<WavesurferProps> = ({
   audioUrl,
   title,
+  isPlaying,
   onReady,
   onTimeUpdate,
   currentTime,
@@ -22,7 +18,6 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
   const containerRef = useRef(null);
   const [volume, setVolume] = useState(1);
   const [isReady, setIsReady] = useState(false);
-  const [localCurrentTime, setLocalCurrentTime] = useState(0);
 
   const getColors = (title: string) => {
     switch (title.toLowerCase()) {
@@ -69,16 +64,7 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
     url: audioUrl,
     plugins: useMemo(() => [Timeline.create()], []),
     backend: "MediaElement",
-    mediaControls: true,
   });
-
-  const handleTimeUpdate = useCallback(
-    (time: number) => {
-      setLocalCurrentTime(time);
-      onTimeUpdate(time);
-    },
-    [onTimeUpdate]
-  );
 
   useEffect(() => {
     if (wavesurfer && !isReady) {
@@ -86,26 +72,36 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
       onReady(wavesurfer);
       wavesurfer.setVolume(volume);
       wavesurfer.on("audioprocess", () => {
-        handleTimeUpdate(wavesurfer.getCurrentTime());
+        onTimeUpdate(wavesurfer.getCurrentTime());
       });
       wavesurfer.on("seeking", () => {
-        handleTimeUpdate(wavesurfer.getCurrentTime());
+        onTimeUpdate(wavesurfer.getCurrentTime());
       });
     }
-  }, [wavesurfer, onReady, volume, isReady, handleTimeUpdate]);
+  }, [wavesurfer, onReady, volume, isReady, onTimeUpdate]);
+
+  useEffect(() => {
+    if (wavesurfer && isReady) {
+      if (isPlaying) {
+        wavesurfer.play();
+      } else {
+        wavesurfer.pause();
+      }
+    }
+  }, [isPlaying, wavesurfer, isReady]);
 
   useEffect(() => {
     if (
       wavesurfer &&
       isReady &&
-      Math.abs(localCurrentTime - currentTime) > 0.5
+      Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0.5
     ) {
       const duration = wavesurfer.getDuration();
       if (duration > 0) {
         wavesurfer.seekTo(currentTime / duration);
       }
     }
-  }, [currentTime, wavesurfer, isReady, localCurrentTime]);
+  }, [currentTime, wavesurfer, isReady]);
 
   useEffect(() => {
     if (wavesurfer) {

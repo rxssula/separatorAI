@@ -5,6 +5,7 @@ import { useRef, useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import ResultsPage from "../components/result-page";
+import Loader from "../components/loader";
 
 export default function UploadPage() {
   const [showResults, setShowResults] = useState(false);
@@ -19,6 +20,8 @@ export default function UploadPage() {
     drums: "",
     other: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   if (showResults) {
     return <ResultsPage audioTracks={audioTracks} />;
@@ -26,13 +29,18 @@ export default function UploadPage() {
 
   return (
     <div className="pt-32 container mx-auto">
+      {isLoading && <Loader message={loadingMessage} />}
       <FileUpload
         setShowResults={setShowResults}
         setAudioTracks={setAudioTracks}
+        setIsLoading={setIsLoading}
+        setLoadingMessage={setLoadingMessage}
       />
       <YouTubeEmbed
         setShowResults={setShowResults}
         setAudioTracks={setAudioTracks}
+        setIsLoading={setIsLoading}
+        setLoadingMessage={setLoadingMessage}
       />
     </div>
   );
@@ -46,7 +54,9 @@ const FileUpload: React.FC<{
     drums: string;
     other: string;
   }) => void;
-}> = ({ setShowResults, setAudioTracks }) => {
+  setIsLoading: (isLoading: boolean) => void;
+  setLoadingMessage: (message: string) => void;
+}> = ({ setShowResults, setAudioTracks, setIsLoading, setLoadingMessage }) => {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
@@ -79,6 +89,8 @@ const FileUpload: React.FC<{
     formData.append("file", file);
 
     try {
+      setIsLoading(true);
+      setLoadingMessage("Uploading and processing your file...");
       setUploadStatus("Uploading...");
       const response = await axios.post(
         "https://fastapi-backend-trome-production.up.railway.app/separate/",
@@ -91,11 +103,13 @@ const FileUpload: React.FC<{
       );
       setUploadStatus("File uploaded successfully!");
       setAudioTracks(response.data);
+      setIsLoading(false);
       setShowResults(true);
     } catch (error) {
       setUploadStatus("Upload failed.");
       setError("An error occurred while uploading the file.");
       console.error("Upload error:", error);
+      setIsLoading(false);
     }
   };
 
@@ -146,12 +160,16 @@ const YouTubeEmbed: React.FC<{
     drums: string;
     other: string;
   }) => void;
-}> = ({ setShowResults, setAudioTracks }) => {
+  setIsLoading: (isLoading: boolean) => void;
+  setLoadingMessage: (message: string) => void;
+}> = ({ setShowResults, setAudioTracks, setIsLoading, setLoadingMessage }) => {
   const [url, setUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setIsLoading(true);
+      setLoadingMessage("Processing YouTube video...");
       const response = await axios.post(
         "https://fastapi-backend-trome-production.up.railway.app/separate-youtube/",
         { url },
@@ -162,9 +180,11 @@ const YouTubeEmbed: React.FC<{
         }
       );
       setAudioTracks(response.data);
+      setIsLoading(false);
       setShowResults(true);
     } catch (error) {
       console.error("YouTube processing error:", error);
+      setIsLoading(false);
     }
   };
 

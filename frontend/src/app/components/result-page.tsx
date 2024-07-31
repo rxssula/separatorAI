@@ -1,7 +1,7 @@
 "use client";
 
 import Wavesurfer from "@/app/components/waveform";
-import { FC, useState, useCallback, useEffect } from "react";
+import { FC, useState, useCallback, useEffect, useRef } from "react";
 import WaveSurfer from "wavesurfer.js";
 
 interface ResultsPageProps {
@@ -27,19 +27,25 @@ const ResultsPage: FC<ResultsPageProps> = ({ audioTracks }) => {
     });
   };
 
-  const handleReady = useCallback((wavesurfer: any) => {
+  const handleReady = useCallback((wavesurfer: WaveSurfer) => {
     setWavesurfers((prev) => [...prev, wavesurfer]);
   }, []);
 
   const handlePlayPause = () => {
     setIsPlaying((prev) => !prev);
-    wavesurfers.forEach((ws) => (isPlaying ? ws.pause() : ws.play()));
+    wavesurfers.forEach((ws) => {
+      if (isPlaying) {
+        ws.pause();
+      } else {
+        ws.play();
+      }
+    });
   };
 
   return (
     <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
       <div className="flex flex-col gap-2 sm:gap-4">
-        {Object.entries(audioTracks).map(([title, url], index) => (
+        {Object.entries(audioTracks).map(([title, url]) => (
           <Wavesurfer
             key={title}
             audioUrl={url}
