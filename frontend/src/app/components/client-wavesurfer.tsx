@@ -68,6 +68,8 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
     progressColor: colors.progressColor,
     url: audioUrl,
     plugins: useMemo(() => [Timeline.create()], []),
+    backend: "MediaElement",
+    mediaControls: true,
   });
 
   const handleTimeUpdate = useCallback(
