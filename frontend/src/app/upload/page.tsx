@@ -6,15 +6,11 @@ import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import ResultsPage from "../components/result-page";
 import Loader from "../components/loader";
+import JSZip from "jszip";
 
 export default function UploadPage() {
   const [showResults, setShowResults] = useState(false);
-  const [audioTracks, setAudioTracks] = useState<{
-    vocals: string;
-    bass: string;
-    drums: string;
-    other: string;
-  }>({
+  const [audioTracks, setAudioTracks] = useState<{ [key: string]: string }>({
     vocals: "",
     bass: "",
     drums: "",
@@ -48,15 +44,10 @@ export default function UploadPage() {
 
 const FileUpload: React.FC<{
   setShowResults: (show: boolean) => void;
-  setAudioTracks: (tracks: {
-    vocals: string;
-    bass: string;
-    drums: string;
-    other: string;
-  }) => void;
+  setAudioTracks: (tracks: { [key: string]: string }) => void;
   setIsLoading: (isLoading: boolean) => void;
   setLoadingMessage: (message: string) => void;
-}> = ({ setShowResults, setAudioTracks, setIsLoading, setLoadingMessage }) => {
+}> = ({ setShowResults, setAudioTracks }) => {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
@@ -89,8 +80,6 @@ const FileUpload: React.FC<{
     formData.append("file", file);
 
     try {
-      setIsLoading(true);
-      setLoadingMessage("Uploading and processing your file...");
       setUploadStatus("Uploading...");
       const response = await axios.post(
         "https://fastapi-backend-trome-production.up.railway.app/separate/",
@@ -99,17 +88,31 @@ const FileUpload: React.FC<{
           headers: {
             "Content-Type": "audio/mp3",
           },
+          responseType: "arraybuffer",
         }
       );
-      setUploadStatus("File uploaded successfully!");
-      setAudioTracks(response.data);
-      setIsLoading(false);
+
+      setUploadStatus("File uploaded and processed successfully!");
+
+      // Process the zip file
+      const zip = new JSZip();
+      const contents = await zip.loadAsync(response.data);
+
+      const tracks: { [key: string]: string } = {};
+
+      for (const [filename, file] of Object.entries(contents.files)) {
+        if (!file.dir) {
+          const blob = await file.async("blob");
+          tracks[filename.replace(".wav", "")] = URL.createObjectURL(blob);
+        }
+      }
+
+      setAudioTracks(tracks);
       setShowResults(true);
     } catch (error) {
       setUploadStatus("Upload failed.");
       setError("An error occurred while uploading the file.");
       console.error("Upload error:", error);
-      setIsLoading(false);
     }
   };
 
@@ -154,12 +157,7 @@ const FileUpload: React.FC<{
 
 const YouTubeEmbed: React.FC<{
   setShowResults: (show: boolean) => void;
-  setAudioTracks: (tracks: {
-    vocals: string;
-    bass: string;
-    drums: string;
-    other: string;
-  }) => void;
+  setAudioTracks: (tracks: { [key: string]: string }) => void;
   setIsLoading: (isLoading: boolean) => void;
   setLoadingMessage: (message: string) => void;
 }> = ({ setShowResults, setAudioTracks, setIsLoading, setLoadingMessage }) => {
@@ -177,10 +175,23 @@ const YouTubeEmbed: React.FC<{
           headers: {
             "Content-Type": "application/json",
           },
+          responseType: "arraybuffer",
         }
       );
-      setAudioTracks(response.data);
-      setIsLoading(false);
+      // Process the zip file
+      const zip = new JSZip();
+      const contents = await zip.loadAsync(response.data);
+
+      const tracks: { [key: string]: string } = {};
+
+      for (const [filename, file] of Object.entries(contents.files)) {
+        if (!file.dir) {
+          const blob = await file.async("blob");
+          tracks[filename.replace(".wav", "")] = URL.createObjectURL(blob);
+        }
+      }
+
+      setAudioTracks(tracks);
       setShowResults(true);
     } catch (error) {
       console.error("YouTube processing error:", error);
