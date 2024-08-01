@@ -4,7 +4,7 @@ import * as React from "react";
 const { useMemo, useEffect, useRef } = React;
 import { useWavesurfer } from "@wavesurfer/react";
 import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
-import { FC, useCallback, useState } from "react";
+import { FC, useState } from "react";
 import { WavesurferProps } from "./waveform";
 
 const ClientWavesurfer: FC<WavesurferProps> = ({
