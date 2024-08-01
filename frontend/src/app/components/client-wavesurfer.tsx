@@ -83,7 +83,6 @@ const ClientWavesurfer: FC<WavesurferProps> = ({
       });
 
       wavesurfer.on("loading", (percentage) => {
-        console.log(`Loading: ${percentage}%`);
         setLoadingPercentage(percentage);
       });
 

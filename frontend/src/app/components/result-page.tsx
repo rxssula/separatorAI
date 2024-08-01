@@ -31,7 +31,7 @@ const ResultsPage: FC<ResultsPageProps> = ({ audioTracks }) => {
     setWavesurfers((prev) => [...prev, wavesurfer]);
   }, []);
 
-  const handlePlayPause = () => {
+  const handlePlayPause = useCallback(() => {
     setIsPlaying((prev) => !prev);
     wavesurfers.forEach((ws) => {
       if (isPlaying) {
@@ -40,7 +40,22 @@ const ResultsPage: FC<ResultsPageProps> = ({ audioTracks }) => {
         ws.play();
       }
     });
-  };
+  }, [isPlaying, wavesurfers]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === 'Space' && event.target === document.body) {
+        event.preventDefault();
+        handlePlayPause();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handlePlayPause]);
 
   return (
       <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
