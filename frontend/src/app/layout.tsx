@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import {Abel, Inter, Poppins} from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "./components/navbar";
 import { Analytics } from "@vercel/analytics/react"
