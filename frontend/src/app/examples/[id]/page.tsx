@@ -15,6 +15,36 @@ const audios = [
     Drums: "/music/drums.wav",
     Other: "/music/other.wav",
   },
+  {
+    Vocals: "/music/vocals1.mp3",
+    Bass: "/music/bass1.mp3",
+    Drums: "/music/drums1.mp3",
+    Other: "/music/other1.mp3",
+  },
+  {
+    Vocals: "/music/vocals2.mp3",
+    Bass: "/music/bass2.mp3",
+    Drums: "/music/drums2.mp3",
+    Other: "/music/other2.mp3",
+  },
+  {
+    Vocals: "/music/vocals3.mp3",
+    Bass: "/music/bass3.mp3",
+    Drums: "/music/drums3.mp3",
+    Other: "/music/other3.mp3",
+  },
+  {
+    Vocals: "/music/vocals4.mp3",
+    Bass: "/music/bass4.mp3",
+    Drums: "/music/drums4.mp3",
+    Other: "/music/other4.mp3",
+  },
+  {
+    Vocals: "/music/vocals5.mp3",
+    Bass: "/music/bass5.mp3",
+    Drums: "/music/drums5.mp3",
+    Other: "/music/other5.mp3",
+  },
 ];
 
 const Example: FC<ExampleProps> = ({ params }) => {
